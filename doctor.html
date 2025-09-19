@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استشارة طبية مع الطبيبة - دوائك المنزلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .chat-container { 
+            height: calc(100vh - 200px); 
+            min-height: 500px;
+        }
+        .message { 
+            animation: slideIn 0.3s ease-out; 
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .doctor-typing {
+            animation: typing 1.5s infinite;
+        }
+        @keyframes typing {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-800 transition-colors">
+                        <i class="fas fa-arrow-right text-xl"></i>
+                    </a>
+                    <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                        د
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">د. أفراح محمد</h1>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <span class="w-2 h-2 bg-green-400 rounded-full ml-2 animate-pulse"></span>
+                            متاحة الآن • طب عام
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <button onclick="patientChat.showDoctorInfo()" class="text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-info-circle text-xl"></i>
+                    </button>
+                    <button onclick="patientChat.showEmergencyHelp()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        طوارئ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Container -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3">أهلاً وسهلاً بك</h2>
+                    <p class="text-gray-600 mb-4">أنا د. أفراح محمد، طبيبة عامة مع 8 سنوات خبرة. أهلاً بك في عيادتي الافتراضية</p>
+                    
+                    <!-- Quick Start Options -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <button onclick="patientChat.startQuickConsultation('general')" class="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 transition-all">
+                            <i class="fas fa-user-md text-blue-600 text-xl mb-2 block"></i>
+                            <span class="text-blue-800 font-medium">استشارة عامة</span>
+                        </button>
+                        <button onclick="patientChat.startQuickConsultation('symptoms')" class="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-4 transition-all">
+                            <i class="fas fa-heartbeat text-green-600 text-xl mb-2 block"></i>
+                            <span class="text-green-800 font-medium">أعراض مرضية</span>
+                        </button>
+                        <button onclick="patientChat.startQuickConsultation('medication')" class="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-all">
+                            <i class="fas fa-pills text-purple-600 text-xl mb-2 block"></i>
+                            <span class="text-purple-800 font-medium">استفسار دوائي</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div class="bg-white rounded-xl shadow-lg chat-container flex flex-col">
+                
+                <!-- Chat Header -->
+                <div class="bg-gradient-to-r from-pink-500 to-red-600 text-white p-4 rounded-t-xl">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg">محادثة مع الطبيبة</h3>
+                        <div class="flex items-center space-x-2 space-x-reverse text-sm">
+                            <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                            <span>متصلة الآن</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto space-y-4">
+                    <!-- Initial doctor message -->
+                    <div class="flex items-start space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            د
+                        </div>
+                        <div class="bg-gray-100 rounded-lg rounded-tr-none p-3 max-w-xs">
+                            <p class="text-gray-800">السلام عليكم ورحمة الله وبركاته 👋</p>
+                            <p class="text-gray-800 mt-1">أهلاً بك، كيف يمكنني مساعدتك اليوم؟</p>
+                            <span class="text-xs text-gray-500 mt-2 block">الآن</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="px-4 py-2 hidden">
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user-md text-white text-xs"></i>
+                        </div>
+                        <div class="bg-gray-200 rounded-lg px-3 py-2">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Input Area -->
+                <div class="border-t bg-gray-50 p-4 rounded-b-xl">
+                    <form id="messageForm" class="flex space-x-3 space-x-reverse">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <textarea 
+                                    id="messageInput" 
+                                    placeholder="اكتب رسالتك هنا... (مثل: أشعر بألم في المعدة منذ يومين)"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-3 pl-12 focus:border-pink-500 focus:outline-none resize-none"
+                                    rows="2"
+                                    maxlength="500"></textarea>
+                                <button type="button" onclick="patientChat.toggleEmojiPicker()" class="absolute left-3 top-3 text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between items-center mt-2 text-sm text-gray-500">
+                                <span id="charCount">0/500</span>
+                                <div class="flex space-x-2 space-x-reverse">
+                                    <button type="button" onclick="patientChat.attachFile()" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-paperclip mr-1"></i>
+                                        إرفاق ملف
+                                    </button>
+                                    <button type="button" onclick="patientChat.useVoiceInput()" class="text-green-600 hover:text-green-800">
+                                        <i class="fas fa-microphone mr-1"></i>
+                                        صوت
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button 
+                            type="submit" 
+                            id="sendButton"
+                            class="bg-gradient-to-r from-pink-500 to-red-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-red-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="mt-6">
+                <h4 class="text-white font-semibold mb-3">اقتراحات سريعة:</h4>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="patientChat.sendQuickMessage('أشعر بصداع شديد')" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full hover:bg-opacity-30 transition-all">
+                        <i class="fas fa-head-side-cough mr-1"></i>
+                        صداع
+                    </button>
+                    <button onclick="patientChat.sendQuickMessage('لدي ارتفاع في درجة الحرارة')" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full hover:bg-opacity-30 transition-all">
+                        <i class="fas fa-thermometer-half mr-1"></i>
+                        حمى
+                    </button>
+                    <button onclick="patientChat.sendQuickMessage('أعاني من ألم في المعدة')" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full hover:bg-opacity-30 transition-all">
+                        <i class="fas fa-stomach mr-1"></i>
+                        ألم معدة
+                    </button>
+                    <button onclick="patientChat.sendQuickMessage('أريد استشارة حول دواء معين')" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full hover:bg-opacity-30 transition-all">
+                        <i class="fas fa-pills mr-1"></i>
+                        استفسار دوائي
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for attachments -->
+    <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,.doc,.docx" multiple>
+
+    <!-- Modals -->
+    <div id="modalContainer"></div>
+
+    <!-- Backend API System -->
+    <script src="backend-api.js"></script>
+    <script src="patient-chat.js"></script>
+</body>
+</html>

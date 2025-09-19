@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأطباء - الرد على المستخدمين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .conversation-card { 
+            transition: all 0.3s ease; 
+            border-right: 4px solid transparent;
+        }
+        .conversation-card:hover { 
+            transform: translateX(-5px); 
+            border-right-color: #8B5CF6;
+        }
+        .unread-badge { 
+            animation: pulse 2s infinite; 
+        }
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .message-bubble.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .message-bubble.doctor {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-user-md text-purple-600 text-2xl ml-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">إدارة الأطباء</h1>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center bg-green-100 px-3 py-2 rounded-lg">
+                        <div class="w-3 h-3 bg-green-500 rounded-full ml-2 animate-pulse"></div>
+                        <span class="text-green-700 font-semibold">متصل</span>
+                    </div>
+                    
+                    <button onclick="location.href='index.html'" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-home ml-2"></i>
+                        العودة للرئيسية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-screen">
+            
+            <!-- Conversations List -->
+            <div class="lg:col-span-1 bg-white rounded-xl shadow-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-900">المحادثات النشطة</h2>
+                        <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold" id="totalConversations">
+                            0 محادثة
+                        </div>
+                    </div>
+                    
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" 
+                               id="searchConversations" 
+                               placeholder="البحث في المحادثات..." 
+                               class="w-full pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Conversations -->
+                <div class="overflow-y-auto h-96" id="conversationsList">
+                    <!-- Loading state -->
+                    <div class="p-6 text-center text-gray-500" id="loadingConversations">
+                        <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                        <p>جاري تحميل المحادثات...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col">
+                <!-- Chat Header -->
+                <div class="chat-header text-white p-6 rounded-t-xl" id="chatHeader" style="display: none;">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center ml-4">
+                            <i class="fas fa-user text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold" id="patientName">اسم المريض</h3>
+                            <p class="text-purple-100" id="patientInfo">معلومات المريض</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="flex-1 p-6 overflow-y-auto" id="messagesArea" style="max-height: 400px;">
+                    <div class="text-center text-gray-500 mt-20" id="noConversationSelected">
+                        <i class="fas fa-comments text-6xl mb-4 text-gray-300"></i>
+                        <h3 class="text-xl font-semibold mb-2">اختر محادثة للبدء</h3>
+                        <p>اختر محادثة من القائمة الجانبية لعرض الرسائل والرد عليها</p>
+                    </div>
+                </div>
+
+                <!-- Reply Area -->
+                <div class="border-t border-gray-200 p-6" id="replyArea" style="display: none;">
+                    <form id="replyForm" class="flex gap-4">
+                        <div class="flex-1">
+                            <textarea id="replyMessage" 
+                                    rows="3" 
+                                    placeholder="اكتب ردك هنا..." 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button type="submit" 
+                                    class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold">
+                                <i class="fas fa-paper-plane ml-2"></i>
+                                إرسال
+                            </button>
+                            <button type="button" 
+                                    onclick="addQuickReply()" 
+                                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors text-sm">
+                                <i class="fas fa-plus ml-2"></i>
+                                رد سريع
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Quick Replies -->
+                    <div class="mt-4">
+                        <h4 class="text-sm font-semibold text-gray-600 mb-2">الردود السريعة:</h4>
+                        <div class="flex flex-wrap gap-2" id="quickReplies">
+                            <button onclick="useQuickReply('شكراً لتواصلك معنا. سنراجع استفسارك قريباً.')" 
+                                    class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm transition-colors">
+                                رد شكر
+                            </button>
+                            <button onclick="useQuickReply('يرجى تقديم معلومات أكثر تفصيلاً عن حالتك.')" 
+                                    class="bg-green-100 hover:bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm transition-colors">
+                                طلب تفاصيل
+                            </button>
+                            <button onclick="useQuickReply('نحن نوصي بمراجعة طبيب مختص لحالتك.')" 
+                                    class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-sm transition-colors">
+                                نصيحة طبية
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white p-6 rounded-lg text-center">
+            <i class="fas fa-spinner fa-spin text-purple-600 text-3xl mb-2"></i>
+            <p class="text-gray-700">جاري الإرسال...</p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 z-50" style="display: none;">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Backend API System -->
+    <script src="backend-api.js"></script>
+    <script>
+        class DoctorManagement {
+            constructor() {
+                this.conversations = [];
+                this.currentConversation = null;
+                this.currentUser = null;
+                this.init();
+            }
+
+            async init() {
+                await this.waitForDatabase();
+                await this.loadDoctorUser();
+                await this.loadConversations();
+                this.setupEventListeners();
+                this.setupAutoRefresh();
+            }
+
+            async waitForDatabase() {
+                while (!window.prodDB || !window.prodAPI) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+
+            async loadDoctorUser() {
+                // For demo purposes, we'll use a default doctor
+                this.currentUser = {
+                    id: 'doctor-1',
+                    username: 'dr.afrah',
+                    full_name: 'د. أفراح محمد',
+                    user_type: 'doctor'
+                };
+            }
+
+            async loadConversations() {
+                try {
+                    const response = await fetch('tables/conversations?limit=1000');
+                    const data = await response.json();
+                    
+                    this.conversations = (data.data || [])
+                        .filter(conv => conv.status === 'active')
+                        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                    
+                    this.displayConversations();
+                    document.getElementById('totalConversations').textContent = `${this.conversations.length} محادثة`;
+                } catch (error) {
+                    console.error('Error loading conversations:', error);
+                    this.showNotification('خطأ في تحميل المحادثات', 'error');
+                }
+            }
+
+            displayConversations() {
+                const container = document.getElementById('conversationsList');
+                const loadingEl = document.getElementById('loadingConversations');
+                
+                if (loadingEl) loadingEl.remove();
+
+                if (this.conversations.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-6 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>لا توجد محادثات نشطة</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.conversations.map(conv => {
+                    const lastMessage = conv.last_message || 'لا توجد رسائل';
+                    const hasUnread = conv.unread_count > 0;
+                    
+                    return `
+                        <div class="conversation-card p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50" 
+                             onclick="doctorMgmt.selectConversation('${conv.id}')">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-1">
+                                        <h4 class="font-semibold text-gray-900">${conv.user_name || 'مستخدم غير معروف'}</h4>
+                                        ${hasUnread ? '<div class="unread-badge w-3 h-3 bg-red-500 rounded-full mr-2"></div>' : ''}
+                                    </div>
+                                    <p class="text-sm text-gray-600 truncate">${lastMessage}</p>
+                                    <p class="text-xs text-gray-400 mt-1">${this.formatDate(conv.updated_at)}</p>
+                                </div>
+                                ${hasUnread ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">${conv.unread_count}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async selectConversation(conversationId) {
+                try {
+                    const conversation = this.conversations.find(c => c.id === conversationId);
+                    if (!conversation) return;
+
+                    this.currentConversation = conversation;
+
+                    // Load messages
+                    const response = await fetch(`tables/messages?conversation_id=${conversationId}&limit=1000`);
+                    const data = await response.json();
+                    const messages = data.data || [];
+
+                    this.displayChat(conversation, messages);
+                    await this.markAsRead(conversationId);
+                } catch (error) {
+                    console.error('Error selecting conversation:', error);
+                    this.showNotification('خطأ في تحميل المحادثة', 'error');
+                }
+            }
+
+            displayChat(conversation, messages) {
+                // Show chat header
+                const chatHeader = document.getElementById('chatHeader');
+                const patientName = document.getElementById('patientName');
+                const patientInfo = document.getElementById('patientInfo');
+                const noConversationSelected = document.getElementById('noConversationSelected');
+                const replyArea = document.getElementById('replyArea');
+
+                chatHeader.style.display = 'block';
+                noConversationSelected.style.display = 'none';
+                replyArea.style.display = 'block';
+
+                patientName.textContent = conversation.user_name || 'مستخدم غير معروف';
+                patientInfo.textContent = `آخر نشاط: ${this.formatDate(conversation.updated_at)}`;
+
+                // Display messages
+                const messagesArea = document.getElementById('messagesArea');
+                messagesArea.innerHTML = '';
+
+                if (messages.length === 0) {
+                    messagesArea.innerHTML = `
+                        <div class="text-center text-gray-500 mt-10">
+                            <i class="fas fa-comment text-4xl mb-2"></i>
+                            <p>لا توجد رسائل في هذه المحادثة</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                messages
+                    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+                    .forEach(message => {
+                        const messageEl = this.createMessageElement(message);
+                        messagesArea.appendChild(messageEl);
+                    });
+
+                // Scroll to bottom
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+
+            createMessageElement(message) {
+                const isDoctor = message.sender_type === 'doctor';
+                const div = document.createElement('div');
+                div.className = `flex mb-4 ${isDoctor ? 'justify-end' : 'justify-start'}`;
+
+                div.innerHTML = `
+                    <div class="message-bubble ${isDoctor ? 'doctor' : 'user'} text-white p-3 rounded-lg">
+                        <p class="mb-1">${message.content}</p>
+                        <p class="text-xs opacity-75">${this.formatDate(message.created_at)}</p>
+                    </div>
+                `;
+
+                return div;
+            }
+
+            async handleReply(e) {
+                e.preventDefault();
+                
+                const messageInput = document.getElementById('replyMessage');
+                const content = messageInput.value.trim();
+                
+                if (!content || !this.currentConversation) return;
+
+                this.showLoadingSpinner();
+
+                try {
+                    const messageData = {
+                        conversation_id: this.currentConversation.id,
+                        sender_id: this.currentUser.id,
+                        sender_type: 'doctor',
+                        content: content,
+                        message_type: 'text'
+                    };
+
+                    const response = await fetch('tables/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(messageData)
+                    });
+
+                    if (response.ok) {
+                        // Update conversation
+                        await fetch(`tables/conversations/${this.currentConversation.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                last_message: content,
+                                updated_at: Date.now()
+                            })
+                        });
+
+                        messageInput.value = '';
+                        await this.selectConversation(this.currentConversation.id);
+                        await this.loadConversations();
+                        this.showNotification('تم إرسال الرد بنجاح', 'success');
+                    } else {
+                        throw new Error('Failed to send message');
+                    }
+                } catch (error) {
+                    console.error('Error sending reply:', error);
+                    this.showNotification('خطأ في إرسال الرد', 'error');
+                } finally {
+                    this.hideLoadingSpinner();
+                }
+            }
+
+            async markAsRead(conversationId) {
+                try {
+                    await fetch(`tables/conversations/${conversationId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ unread_count: 0 })
+                    });
+                } catch (error) {
+                    console.error('Error marking as read:', error);
+                }
+            }
+
+            setupEventListeners() {
+                // Reply form
+                document.getElementById('replyForm').addEventListener('submit', (e) => this.handleReply(e));
+
+                // Search
+                document.getElementById('searchConversations').addEventListener('input', (e) => {
+                    this.filterConversations(e.target.value);
+                });
+            }
+
+            filterConversations(searchTerm) {
+                const filtered = this.conversations.filter(conv => 
+                    (conv.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (conv.last_message || '').toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                const container = document.getElementById('conversationsList');
+                // Re-display with filtered results
+                // Implementation similar to displayConversations but with filtered array
+            }
+
+            setupAutoRefresh() {
+                // Refresh conversations every 30 seconds
+                setInterval(() => {
+                    this.loadConversations();
+                    if (this.currentConversation) {
+                        this.selectConversation(this.currentConversation.id);
+                    }
+                }, 30000);
+            }
+
+            formatDate(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'الآن';
+                if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+                if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+                if (diffDays < 30) return `منذ ${diffDays} يوم`;
+                
+                return date.toLocaleDateString('ar-EG');
+            }
+
+            showLoadingSpinner() {
+                document.getElementById('loadingSpinner').style.display = 'flex';
+            }
+
+            hideLoadingSpinner() {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                const notificationText = document.getElementById('notificationText');
+                
+                notificationText.textContent = message;
+                notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' :
+                    type === 'error' ? 'bg-red-500 text-white' :
+                    type === 'warning' ? 'bg-yellow-500 text-white' :
+                    'bg-blue-500 text-white'
+                }`;
+                
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Quick reply functions
+        function useQuickReply(text) {
+            document.getElementById('replyMessage').value = text;
+        }
+
+        function addQuickReply() {
+            const text = prompt('أدخل نص الرد السريع:');
+            if (text) {
+                const quickReplies = document.getElementById('quickReplies');
+                const button = document.createElement('button');
+                button.onclick = () => useQuickReply(text);
+                button.className = 'bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm transition-colors';
+                button.textContent = text.substring(0, 20) + (text.length > 20 ? '...' : '');
+                quickReplies.appendChild(button);
+            }
+        }
+
+        // Initialize
+        let doctorMgmt;
+        document.addEventListener('DOMContentLoaded', () => {
+            doctorMgmt = new DoctorManagement();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الأدمن - دوائك المنزلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .sidebar { min-height: 100vh; }
+        .dashboard-card { transition: all 0.3s ease; }
+        .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2.5rem; font-weight: 900; }
+        .chart-container { position: relative; height: 400px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="flex">
+        <aside class="sidebar w-64 bg-gradient-to-b from-purple-800 to-indigo-900 text-white p-6 fixed h-screen overflow-y-auto">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-2">لوحة التحكم</h2>
+                <p class="text-purple-200">مرحباً بك، أدمن</p>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt ml-3"></i>
+                    لوحة المتابعة
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="visitors">
+                    <i class="fas fa-users ml-3"></i>
+                    إحصائيات الزوار
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="users">
+                    <i class="fas fa-user-friends ml-3"></i>
+                    إدارة المستخدمين
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="doctors">
+                    <i class="fas fa-user-md ml-3"></i>
+                    إدارة الطبيبات
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="conversations">
+                    <i class="fas fa-comments ml-3"></i>
+                    المحادثات
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="tips">
+                    <i class="fas fa-lightbulb ml-3"></i>
+                    النصائح الطبية
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="ai">
+                    <i class="fas fa-robot ml-3"></i>
+                    استشارات الذكاء الاصطناعي
+                </a>
+                
+                <div class="border-t border-purple-600 pt-4 mt-6">
+                    <a href="#" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors" data-section="settings">
+                        <i class="fas fa-cog ml-3"></i>
+                        الإعدادات
+                    </a>
+                    <a href="index.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors">
+                        <i class="fas fa-home ml-3"></i>
+                        العودة للمنصة
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 mr-64">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b p-4">
+                <div class="flex justify-between items-center">
+                    <h1 id="pageTitle" class="text-2xl font-bold text-gray-800">لوحة المتابعة</h1>
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <button class="relative">
+                            <i class="fas fa-bell text-xl text-gray-600 hover:text-purple-600 transition-colors"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs px-1">5</span>
+                        </button>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+                                 alt="Admin" class="w-10 h-10 rounded-full">
+                            <span class="text-gray-700 font-semibold">المدير العام</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="dashboard-card bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">إجمالي المستخدمين</p>
+                                <p id="totalUsers" class="stat-number text-blue-600">0</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-users text-2xl text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">الطبيبات النشطات</p>
+                                <p id="activeDoctors" class="stat-number text-green-600">0</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-user-md text-2xl text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">المحادثات اليوم</p>
+                                <p id="todayConversations" class="stat-number text-purple-600">0</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-comments text-2xl text-purple-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">زوار اليوم</p>
+                                <p id="todayVisitors" class="stat-number text-orange-600">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <i class="fas fa-eye text-2xl text-orange-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <h3 class="text-lg font-bold mb-4">إحصائيات الزوار (آخر 7 أيام)</h3>
+                        <div class="chart-container">
+                            <canvas id="visitorsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                        <h3 class="text-lg font-bold mb-4">توزيع المستخدمين حسب الدولة</h3>
+                        <div class="chart-container">
+                            <canvas id="countriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold mb-4">النشاطات الأخيرة</h3>
+                    <div id="recentActivities" class="space-y-4">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visitors Section -->
+            <section id="visitorsSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold">إحصائيات الزوار المفصلة</h2>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-download ml-2"></i>
+                                تصدير البيانات
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table id="visitorsTable" class="w-full table-auto">
+                                <thead>
+                                    <tr class="bg-gray-50 text-right">
+                                        <th class="px-4 py-3 font-semibold text-gray-700">عنوان IP</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">الدولة</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">المدينة</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">نوع الجهاز</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">المتصفح</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">نظام التشغيل</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">وقت الزيارة</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">مدة الجلسة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorsTableBody">
+                                    <!-- Visitors data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Management Section -->
+            <section id="usersSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold">إدارة المستخدمين</h2>
+                            <button id="addUserBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus ml-2"></i>
+                                إضافة مستخدم جديد
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table id="usersTable" class="w-full table-auto">
+                                <thead>
+                                    <tr class="bg-gray-50 text-right">
+                                        <th class="px-4 py-3 font-semibold text-gray-700">الاسم الكامل</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">اسم المستخدم</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">البريد الإلكتروني</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">الهاتف</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">نوع المستخدم</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">الحالة</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- Users data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Doctors Management Section -->
+            <section id="doctorsSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold">إدارة الطبيبات</h2>
+                            <button id="addDoctorBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus ml-2"></i>
+                                إضافة طبيبة جديدة
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="doctorsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Doctors cards will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conversations Section -->
+            <section id="conversationsSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <h2 class="text-xl font-bold">إدارة المحادثات</h2>
+                        <p class="text-gray-600 mt-1">يمكنك مراقبة جميع المحادثات والرد باسم أي طبيبة</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="conversationsList" class="space-y-4">
+                            <!-- Conversations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Medical Tips Management Section -->
+            <section id="tipsSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold">إدارة النصائح الطبية</h2>
+                            <button id="addTipBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-plus ml-2"></i>
+                                إضافة نصيحة جديدة
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="tipsManagementGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Tips will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Consultations Section -->
+            <section id="aiSection" class="p-6 hidden">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div class="p-6 border-b">
+                        <h2 class="text-xl font-bold">استشارات الذكاء الاصطناعي</h2>
+                        <p class="text-gray-600 mt-1">مراجعة وإدارة الاستشارات التي تم تحليلها بالذكاء الاصطناعي</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div id="aiConsultationsList" class="space-y-4">
+                            <!-- AI consultations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals will be added dynamically -->
+    <div id="modalContainer"></div>
+
+    <!-- Backend API System -->
+    <script src="backend-api.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
