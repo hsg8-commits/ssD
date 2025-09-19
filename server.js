@@ -54,7 +54,7 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-    origin: ['http://13.60.79.191:3000', 'http://localhost:8080', 'http://127.0.0.1:5500', '*'],
+    origin: ['https://ssd-ouae.onrender.com', 'http://localhost:8080', 'http://127.0.0.1:5500', '*'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -756,8 +756,8 @@ async function startServer() {
             console.log('🌐 منصة دوائك المنزلي');
             console.log('🚀 ===================================');
             console.log(`✅ Server running on port ${PORT}`);
-            console.log(`🌐 Frontend: http://13.60.79.191:${PORT}`);
-            console.log(`📡 API Base: http://13.60.79.191:${PORT}/api`);
+            console.log(`🌐 Frontend: https://ssd-ouae.onrender.com:${PORT}`);
+            console.log(`📡 API Base: https://ssd-ouae.onrender.com:${PORT}/api`);
             console.log('💾 Database: JSON files in /database folder');
             console.log('🔐 JWT Authentication enabled');
             console.log('📊 Audit logging enabled');
