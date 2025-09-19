@@ -7,10 +7,8 @@
 
 class BackendAPI {
     constructor() {
-        // API Base URL - يجب تغييرها حسب عنوان السيرفر
-        this.baseURL = window.location.origin.includes('https://ssd-ouae.onrender.com') ? 
-            'http://localhost:3000/api' : 
-            'https://ssd-ouae.onrender.com/api'; // للاستضافة العامة
+        // API Base URL - تتكيف تلقائياً مع البيئة
+        this.baseURL = window.location.origin + '/api';
         
         this.token = localStorage.getItem('medical_platform_token');
         this.currentUser = null;

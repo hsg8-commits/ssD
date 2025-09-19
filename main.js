@@ -10,7 +10,7 @@ class MedicalPlatform {
         this.uploadedFiles = [];
         
         // Check if running in production environment
-        this.isProduction = window.location.protocol === 'https:' && !window.location.hostname.includes('13.60.79.191');
+        this.isProduction = window.location.protocol === 'https:' && !window.location.hostname.includes('localhost');
         
         console.log('Medical Platform initializing...', {
             isProduction: this.isProduction,
@@ -26,17 +26,15 @@ class MedicalPlatform {
     }
 
     async waitForDatabase() {
-        // Wait for backend API to be available
-        let attempts = 0;
-        while (!window.backendAPI) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-            if (attempts > 30) {
-                console.error('Backend API initialization timeout');
-                break;
+        // Wait for hybrid system to be available
+        await new Promise(resolve => {
+            if (window.hybridSystem) {
+                resolve();
+            } else {
+                window.addEventListener('hybrid-system-ready', resolve);
             }
-        }
-        console.log('Backend API ready - Real database connection established');
+        });
+        console.log('Hybrid system ready - Database connection established');
     }
 
     init() {

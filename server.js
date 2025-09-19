@@ -21,7 +21,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'medical-platform-secret-key-2024';
 
 // Database paths
@@ -54,7 +54,7 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-    origin: ['https://ssd-ouae.onrender.com', 'http://localhost:8080', 'http://127.0.0.1:5500', '*'],
+    origin: ['http://localhost:3000', 'http://localhost:8080', 'http://127.0.0.1:5500', '*'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -65,7 +65,36 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files (Frontend)
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Serve HTML files
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/doctor', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doctor.html'));
+});
+
+app.get('/doctor-management', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doctor-management.html'));
+});
+
+app.get('/data-management', (req, res) => {
+    res.sendFile(path.join(__dirname, 'data-management.html'));
+});
 
 // ======================== DATABASE FUNCTIONS ========================
 
@@ -756,8 +785,8 @@ async function startServer() {
             console.log('🌐 منصة دوائك المنزلي');
             console.log('🚀 ===================================');
             console.log(`✅ Server running on port ${PORT}`);
-            console.log(`🌐 Frontend: https://ssd-ouae.onrender.com:${PORT}`);
-            console.log(`📡 API Base: https://ssd-ouae.onrender.com:${PORT}/api`);
+            console.log(`🌐 Frontend: http://localhost:${PORT}`);
+            console.log(`📡 API Base: http://localhost:${PORT}/api`);
             console.log('💾 Database: JSON files in /database folder');
             console.log('🔐 JWT Authentication enabled');
             console.log('📊 Audit logging enabled');

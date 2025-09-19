@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: medical-platform
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: database
+      mountPath: /opt/render/project/src/database
+      sizeGB: 1
